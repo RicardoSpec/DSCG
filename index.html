@@ -88,7 +88,7 @@ function draw(){
   const q=(k,t,key)=>`<div class=bq><h3>${t}<small> +5 XP</small></h3>${R.o[k].map((v,i)=>{const a=R.b[k];const cl=a===null?'':v===c[key]?'ok':a===i?'ko':'';return `<button class="o ${cl}" data-k=${k} data-i=${i} ${a!==null?'disabled':''}>${esc(one(v))}</button>`}).join('')}</div>`;
   const mk=k=>R.b[k]===null?'–':R.ok[k]?'✓':'✗';
   const body=R.fl?`<p class=bb>Bonus : article ${mk('a')} · délai ${mk('d')}</p><div class=bk><h3>Quand l'utilise-t-on ?</h3><p>${esc(c.q)}</p><h3>Acteurs clés</h3><p>${esc(c.ac)}</p><h3>Étapes</h3>${lines(c.e)}<h3>Délais importants</h3>${lines(c.dl)}<h3>Références</h3><p>${esc(c.refs)}</p></div><div class=rt><button class="rb r0" data-q=0>1 · Raté</button><button class="rb r1" data-q=1>2 · Hésité</button><button class="rb r2" data-q=2>3 · Maîtrisé</button></div>`
-  :q('a','Bonus · Quel article ?','refs')+q('d','Bonus · Quel info clé ?','dl')+'<button class=pb id=fl>Retourner la carte</button>';
+  :q('a','Bonus · Quel article ?','refs')+q('d','Bonus · Quelle info clé ?','dl')+'<button class=pb id=fl>Retourner la carte</button>';
   app.innerHTML=`<div class=hud><button class=x id=qt aria-label="Quitter">✕</button><div class=pg><u style="width:${R.i/n*100}%"></u></div><span>${R.i+1}/${n}</span><span class=xp>${R.xp} XP</span>${R.st>1?`<span class=cb>×${m}</span>`:''}</div>
   <div class=card style="--dc:${COL[c.dom]||'#2d2a6e'}"><div class=band><span>${esc(c.dom)} · ${esc(c.sub)}</span><span>${'★'.repeat(c.f)}</span></div><div class=cbody><h2 class=proc>${esc(c.p)}</h2>${body}</div></div>`;
   $('#qt').onclick=home;
