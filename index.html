@@ -56,7 +56,7 @@ const COL={'Droit des sociétés':'#1B3A5C','Entreprises en difficulté':'#7B2D0
 const TITLES=[[0,'Stagiaire'],[100,'Collaborateur'],[300,'Chef de mission'],[600,'Manager'],[1000,'Associé'],[1600,'Commissaire aux comptes']];
 let S={xp:0,mast:{}},R=null;
 try{S=Object.assign(S,JSON.parse(localStorage.getItem('ue1q')||'{}'))}catch(e){}
-const mapPX=a=>a.map(x=>({n:'x'+x.n,dom:'DCG UE 1',sub:'Fiche '+x.fi,fi:+x.fi,p:x.q,qa:x.a,f:0}));
+const mapPX=a=>a.map(x=>({n:'x'+x.n,dom:'DCG UE 1',sub:'Fiche '+x.fi,fi:+x.fi,p:x.q,qa:x.a,art:x.art||'',f:0}));
 let PX=[];try{PX=mapPX(JSON.parse(localStorage.getItem('ue1x')||'[]'))}catch(e){}
 const save=()=>{try{localStorage.setItem('ue1q',JSON.stringify(S))}catch(e){}};
 const rank=x=>TITLES.filter(t=>x>=t[0]).pop();
@@ -64,7 +64,7 @@ const shuf=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const one=s=>s.replace(/\n/g,' · '),lines=s=>s.split('\n').map(l=>'<p>'+esc(l)+'</p>').join('');
 function opts(c,k,pref){
-  const P=c.qa?PX:D,u=[...new Set(P.filter(o=>o.n!==c.n).map(o=>o[k]))].filter(v=>v!==c[k]);
+  const P=c.qa?PX:D,u=[...new Set(P.filter(o=>o.n!==c.n).map(o=>o[k]))].filter(v=>v&&v!==c[k]);
   const p=shuf(u.filter(v=>P.some(o=>o[k]===v&&pref(o)))),r=shuf(u.filter(v=>!p.includes(v)));
   return shuf([c[k],...p.concat(r).slice(0,3)]);
 }
@@ -87,21 +87,21 @@ function start(deck){R={deck:shuf(deck),i:0,xp:0,st:0,res:[0,0,0],bn:0,bo:0,miss
 function show(){
   if(R.i>=R.deck.length)return end();
   const c=R.deck[R.i],cd=x=>x.refs.split(' art')[0];
-  R.fl=false;R.b=c.qa?{r:null}:{a:null,d:null};R.ok=c.qa?{r:0}:{a:0,d:0};
-  R.o=c.qa?{r:opts(c,'qa',o=>o.fi===c.fi)}:{a:opts(c,'refs',o=>cd(o)===cd(c)),d:opts(c,'dl',o=>o.dom===c.dom)};
+  R.fl=false;R.b=c.qa?(c.art?{r:null,a:null}:{r:null}):{a:null,d:null};R.ok=c.qa?(c.art?{r:0,a:0}:{r:0}):{a:0,d:0};
+  R.o=c.qa?(c.art?{r:opts(c,'qa',o=>o.fi===c.fi),a:opts(c,'art',o=>o.art.split(' art')[0]===c.art.split(' art')[0])}:{r:opts(c,'qa',o=>o.fi===c.fi)}):{a:opts(c,'refs',o=>cd(o)===cd(c)),d:opts(c,'dl',o=>o.dom===c.dom)};
   draw();
 }
 function draw(){
   const c=R.deck[R.i],n=R.deck.length,m=(1+Math.min(R.st,5)*.1).toFixed(1);
   const q=(k,t,key)=>`<div class=bq><h3>${t}<small> +5 XP</small></h3>${R.o[k].map((v,i)=>{const a=R.b[k];const cl=a===null?'':v===c[key]?'ok':a===i?'ko':'';return `<button class="o ${cl}" data-k=${k} data-i=${i} ${a!==null?'disabled':''}>${esc(one(v))}</button>`}).join('')}</div>`;
   const mk=k=>R.b[k]===null?'–':R.ok[k]?'✓':'✗';
-  const body=c.qa?(R.fl?`<p class=bb>Bonus : réponse ${mk('r')}</p><div class=bk><h3>Réponse</h3>${lines(c.qa)}</div><div class=rt><button class="rb r0" data-q=0>1 · Raté</button><button class="rb r1" data-q=1>2 · Hésité</button><button class="rb r2" data-q=2>3 · Maîtrisé</button></div>`:q('r','Bonus · Quelle est la bonne réponse ?','qa')+'<button class=pb id=fl>Retourner la carte</button>'):R.fl?`<p class=bb>Bonus : article ${mk('a')} · délai ${mk('d')}</p><div class=bk><h3>Quand l'utilise-t-on ?</h3><p>${esc(c.q)}</p><h3>Acteurs clés</h3><p>${esc(c.ac)}</p><h3>Étapes</h3>${lines(c.e)}<h3>Délais importants</h3>${lines(c.dl)}<h3>Références</h3><p>${esc(c.refs)}</p></div><div class=rt><button class="rb r0" data-q=0>1 · Raté</button><button class="rb r1" data-q=1>2 · Hésité</button><button class="rb r2" data-q=2>3 · Maîtrisé</button></div>`
+  const body=c.qa?(R.fl?`<p class=bb>Bonus : réponse ${mk('r')}${c.art?' · article '+mk('a'):''}</p><div class=bk><h3>Réponse</h3>${lines(c.qa)}${c.art?'<h3>Article (indicatif, à vérifier)</h3><p>'+esc(c.art)+'</p>':''}</div><div class=rt><button class="rb r0" data-q=0>1 · Raté</button><button class="rb r1" data-q=1>2 · Hésité</button><button class="rb r2" data-q=2>3 · Maîtrisé</button></div>`:q('r','Bonus · Quelle est la bonne réponse ?','qa')+(c.art?q('a','Bonus · Quel article ?','art'):'')+'<button class=pb id=fl>Retourner la carte</button>'):R.fl?`<p class=bb>Bonus : article ${mk('a')} · délai ${mk('d')}</p><div class=bk><h3>Quand l'utilise-t-on ?</h3><p>${esc(c.q)}</p><h3>Acteurs clés</h3><p>${esc(c.ac)}</p><h3>Étapes</h3>${lines(c.e)}<h3>Délais importants</h3>${lines(c.dl)}<h3>Références</h3><p>${esc(c.refs)}</p></div><div class=rt><button class="rb r0" data-q=0>1 · Raté</button><button class="rb r1" data-q=1>2 · Hésité</button><button class="rb r2" data-q=2>3 · Maîtrisé</button></div>`
   :q('a','Bonus · Quel article ?','refs')+q('d','Bonus · Quel délai clé ?','dl')+'<button class=pb id=fl>Retourner la carte</button>';
   app.innerHTML=`<div class=hud><button class=x id=qt aria-label="Quitter">✕</button><div class=pg><u style="width:${R.i/n*100}%"></u></div><span>${R.i+1}/${n}</span><span class=xp>${R.xp} XP</span>${R.st>1?`<span class=cb>×${m}</span>`:''}</div>
   <div class=card style="--dc:${COL[c.dom]||'#2d2a6e'}"><div class=band><span>${esc(c.dom)} · ${esc(c.sub)}</span><span>${'★'.repeat(c.f)}</span></div><div class=cbody><h2 class=proc>${esc(c.p)}</h2>${body}</div></div>`;
   $('#qt').onclick=home;
   const f=$('#fl');if(f)f.onclick=()=>{R.fl=true;draw()};
-  app.querySelectorAll('.o:not(:disabled)').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=+b.dataset.i;R.b[k]=i;R.bn++;if(R.o[k][i]===c[{a:'refs',d:'dl',r:'qa'}[k]]){R.bo++;R.ok[k]=1}draw()});
+  app.querySelectorAll('.o:not(:disabled)').forEach(b=>b.onclick=()=>{const k=b.dataset.k,i=+b.dataset.i;R.b[k]=i;R.bn++;if(R.o[k][i]===c[k==='a'&&c.qa?'art':{a:'refs',d:'dl',r:'qa'}[k]]){R.bo++;R.ok[k]=1}draw()});
   app.querySelectorAll('.rb').forEach(b=>b.onclick=()=>rate(+b.dataset.q));
   scrollTo(0,0);
 }
